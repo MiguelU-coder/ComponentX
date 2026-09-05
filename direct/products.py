@@ -1,10 +1,13 @@
 # Crud creation for 'ComponentX' direct access operations
 # This crud will help with the Products organizations and inventory
 
+# 'os' is used to check whether the data files already exist
+# before creating them (files are only created when an action runs).
+import os
 
-## Function for building a fixed-length product register
+## Function for building a length product register
 ## @params: active, id, name, category, stock, price, shop_id, description
-## @return: Fixed-length product register
+## @return: length product register
 def build_product(active, id, name, category, stock, price, shop_id, description):
     return (
         str(active).ljust(1) +
@@ -18,7 +21,7 @@ def build_product(active, id, name, category, stock, price, shop_id, description
         "\n"
     )
 
-# Define the width of the register
+# Width of each field in the register (in bytes):
 # active = 1
 # id = 4
 # name = 30
@@ -28,45 +31,57 @@ def build_product(active, id, name, category, stock, price, shop_id, description
 # shop_id = 4
 # description = 50
 # newline = 1
+# Total length of a register: 1+4+30+20+6+10+4+50+1 = 126.
 
 PRODUCT_REGISTER_LEN = 126
-
-with open('Products.txt', 'a', encoding='utf-8') as file:
-    pass
 
 ## Function for checking if a product ID exists using direct access
 ## @params: id_searched
 ## @return: True if the product exists, False otherwise
 def check_product_exists(id_searched):
-    with open('Products.txt', 'r', encoding='utf-8') as file:
+    with open('Products_direct.txt', 'r', encoding='utf-8') as file:
         file.seek((id_searched - 1) * PRODUCT_REGISTER_LEN)
         register = file.read(PRODUCT_REGISTER_LEN)
-# IF statement for validating the product ID and prevent errors
+
+# If the file is shorter than a full register, the id does not exist.
         if not register or len(register) < PRODUCT_REGISTER_LEN:
             print(f"\nError: Product ID {id_searched} does not exist.")
             return False
+
         active = register[0:1]
+
         if active == "0":
             print(f"\nError: Product ID {id_searched} was deleted.")
             return False
+
+    return True
 
 ## Function for creating a new product using direct access
 ## @params: id, name, category, stock, price, shop_id, description
 ## @return: True if the product was created, False otherwise
 def create_product_direct(id, name, category, stock, price, shop_id, description):
-# IF statement for checking if the product ID exists and prevent duplications
+# Create the file only when the create action runs,
+# and only if it does not exist
+    if not os.path.exists('Products_direct.txt'):
+        open('Products_direct.txt', 'w', encoding='utf-8').close()
+
+# Prevent duplicate ids
     if check_product_exists(id):
         print(f"\nError: Product ID {id} already exists.")
         return False
-# Try/except for shop validation and prevent errors
+
+# Try/except for shop validation
+# the shop the product belongs to must exist
     try:
-        with open('Shops.txt', 'r', encoding='utf-8'):
+        with open('Shops_direct.txt', 'r', encoding='utf-8'):
             pass
     except FileNotFoundError:
-        print("\nError: Shops.txt does not exist.")
+        print("\nError: Shops_direct.txt does not exist.")
         return False
+
     register = build_product(1, id, name, category, stock, price, shop_id, description)
-    with open('Products.txt', 'r+', encoding='utf-8') as file:
+
+    with open('Products_direct.txt', 'r+', encoding='utf-8') as file:
         file.seek((id - 1) * PRODUCT_REGISTER_LEN)
         file.write(register)
     print(f"\nProduct {id} was created.")
@@ -75,13 +90,19 @@ def create_product_direct(id, name, category, stock, price, shop_id, description
 ## @params: id
 ## @return: None
 def read_product_direct(id):
-    with open('Products.txt', 'r', encoding='utf-8') as file:
+# If the file was never created there is nothing to read.
+    if not os.path.exists('Products_direct.txt'):
+        print(f"\nError: Products_direct.txt does not exist.")
+        return
+
+    with open('Products_direct.txt', 'r', encoding='utf-8') as file:
         file.seek((id - 1) * PRODUCT_REGISTER_LEN)
         register = file.read(PRODUCT_REGISTER_LEN)
 # IF statement for checking if the product ID exists
         if not register or len(register) < PRODUCT_REGISTER_LEN:
             print(f"\nProduct with ID {id} was not found.")
             return
+
         active = register[0:1]
 # IF statement for checking if the product is deleted
         if active == "0":
@@ -109,18 +130,20 @@ def read_product_direct(id):
 ## @params: None
 ## @return: None
 def read_products_direct():
-    with open('Products.txt', 'r', encoding='utf-8') as file:
+# If the file was never created there is nothing to read.
+    if not os.path.exists('Products_direct.txt'):
+        print(f"\nError: Products_direct.txt does not exist.")
+        return
+
+    with open('Products_direct.txt', 'r', encoding='utf-8') as file:
 # While loop for reading the entire file
         while True:
             register = file.read(PRODUCT_REGISTER_LEN)
-# IF statement for checking if the file is empty
             if not register:
                 break
-# IF statement for checking the length of the register
             if len(register) < PRODUCT_REGISTER_LEN:
                 break
             active = register[0:1]
-# IF statement for checking if the product is deleted
             if active == "0":
                 continue
 
@@ -137,16 +160,20 @@ def read_products_direct():
 ## @params: id, name, category, stock, price, shop_id, description
 ## @return: True if the product was updated, False otherwise
 def update_product_direct(id, name, category, stock, price, shop_id, description):
-    with open('Products.txt', 'r+', encoding='utf-8') as file:
+# If the file was never created there is nothing to update.
+    if not os.path.exists('Products_direct.txt'):
+        print(f"\nError: Products_direct.txt does not exist.")
+        return False
+
+    with open('Products_direct.txt', 'r+', encoding='utf-8') as file:
         file.seek((id - 1) * PRODUCT_REGISTER_LEN)
         register = file.read(PRODUCT_REGISTER_LEN)
-# IF statement for checking if the product exists
+
         if not register or len(register) < PRODUCT_REGISTER_LEN:
             print(f"\nProduct with ID {id} was not found.")
             return False
 
         active = register[0:1]
-# IF statement for checking if the product is deleted
         if active == "0":
             print(f"\nThe register {id}: WAS DELETED")
 
@@ -159,20 +186,24 @@ def update_product_direct(id, name, category, stock, price, shop_id, description
 ## @params: id
 ## @return: True if the product was deleted, False otherwise
 def delete_product_direct(id):
-    with open('Products.txt', 'r+', encoding='utf-8') as file:
+# If the file was never created there is nothing to delete.
+    if not os.path.exists('Products_direct.txt'):
+        print(f"\nError: Products_direct.txt does not exist.")
+        return False
+
+    with open('Products_direct.txt', 'r+', encoding='utf-8') as file:
         file.seek((id - 1) * PRODUCT_REGISTER_LEN)
         register = file.read(PRODUCT_REGISTER_LEN)
-# IF statement validation for checking if product exists
+
         if not register or len(register) < PRODUCT_REGISTER_LEN:
             print(f"\nProduct with ID {id} was not found.")
             return False
         active = register[0:1]
-# IF statement validation for checking if the product is deleted
         if active == "0":
             print(f"\nThe register {id}: WAS DELETED")
-            
+
         file.seek((id - 1) * PRODUCT_REGISTER_LEN)
         file.write("0")
     print(f"\nProduct {id} was deleted.")
 
-# We used return false at the end of an statement for close the procces
+# We used return false at the end of an statement for close the process
