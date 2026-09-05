@@ -1,0 +1,2 @@
+0,2, TechHub, Tienda de tecnologia, 0002
+0,1, Capital Computer, Tienda de perifericos, 0001

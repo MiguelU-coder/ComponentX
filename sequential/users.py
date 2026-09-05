@@ -1,19 +1,19 @@
 # Crud creation for 'ComponentX' basic operations
 # This crud will help with the users organizations and inventory
 
+import os
+# OS is imported to check if the file exists
+
 ## Function for checking if an ID exists in a file
 ## @params: filename, id_searched
 ## @return: None
-
-import os
-# OS is imported to check if the file exists
 def check_id_exists(filename, id_searched):
     if not os.path.exists(filename):
         return False
     with open(filename, 'r', encoding='utf-8') as file:
         for line in file:
             fields = line.strip().split(',')
-            if fields and fields[0] == str(id_searched):
+            if fields and fields[1] == str(id_searched):
                 return True
     return False
 
@@ -24,7 +24,7 @@ def create_user(id, name, mail, rol, shop_id):
         print(f"\nError: Shop ID {shop_id} does not exist.")
         return False
     with open('Users.txt', 'a', encoding='utf-8') as file:
-        lines = (f"{id}, {name}, {mail}, {rol}, {shop_id}\n") 
+        lines = (f"0,{id}, {name}, {mail}, {rol}, {shop_id}\n") 
         file.write(lines)
         print("A new line was written")
 
@@ -46,11 +46,11 @@ def update_user(id_searched, name, mail, rol, shop_id):
         for line in file:
             fields = line.strip().split(',')
 # The if function will help to identify if the id_searched is equal to the id of the shop
-            if fields[0] == str(id_searched):
-                fields[1] = str(name)
-                fields[2] = str(mail)
-                fields[3] = str(rol)
-                fields[4] = str(shop_id)
+            if fields[1] == str(id_searched):
+                fields[2] = str(name)
+                fields[3] = str(mail)
+                fields[4] = str(rol)
+                fields[5] = str(shop_id)
             new_lines.append(','.join(fields))
 
     with open('Users.txt', 'w', encoding='utf-8') as file:
@@ -65,7 +65,7 @@ def delete_user(id_searched):
     with open('Users.txt', 'r', encoding='utf-8') as file:
         for line in file:
             fields = line.strip().split(',')
-            if fields[0] != str(id_searched):
+            if fields[1] != str(id_searched):
                 new_lines.append(line)
                 print(f"Deleting a user with the id: {id_searched}")
     with open('Users.txt', 'w', encoding='utf-8') as file:

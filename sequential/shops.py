@@ -1,19 +1,18 @@
 # Crud creation for 'ComponentX' basic operations
 # This crud will help with the shops organizations and inventory
 
+import os
+# OS is imported to check if the file exists
 ## Function for checking if an ID exists in a file
 ## @params: filename, id_searched
 ## @return: None
-
-import os
-# OS is imported to check if the file exists
 def check_id_exists(filename, id_searched):
     if not os.path.exists(filename):
         return False
     with open(filename, 'r', encoding='utf-8') as file:
         for line in file:
             fields = line.strip().split(',')
-            if fields and fields[0] == str(id_searched):
+            if fields and fields[1] == str(id_searched):
                 return True
     return False
 ## Function for creating a new Shop
@@ -23,7 +22,7 @@ def create_shop(id, name, description, admin_user_id):
         print(f"\nError: User ID {admin_user_id} does not exist.")
         return False
     with open('Shops.txt', 'a', encoding='utf-8') as file:
-        lines = (f"{id}, {name}, {description}, {admin_user_id}\n") 
+        lines = (f"0,{id}, {name}, {description}, {admin_user_id}\n") 
         file.write(lines)
         print("A new line was written")
 
@@ -45,10 +44,10 @@ def update_shop(id_searched, name, description, admin_user_id):
         for line in file:
             fields = line.strip().split(',')
 # The if function will help to identify if the id_searched is equal to the id of the shop
-            if fields[0] == str(id_searched):
-                fields[1] = str(name)
-                fields[2] = str(description)
-                fields[3] = str(admin_user_id)
+            if fields[1] == str(id_searched):
+                fields[2] = str(name)
+                fields[3] = str(description)
+                fields[4] = str(admin_user_id)
             new_lines.append(','.join(fields))
 
     with open('Shops.txt', 'w', encoding='utf-8') as file:
@@ -63,7 +62,7 @@ def delete_shop(id_searched):
     with open('Shops.txt', 'r', encoding='utf-8') as file:
         for line in file:
             fields = line.strip().split(',')
-            if fields[0] != str(id_searched):
+            if fields[1] != str(id_searched):
                 new_lines.append(line)
                 print(f"Deleting a shop with the id: {id_searched}")
     with open('Shops.txt', 'w', encoding='utf-8') as file:

@@ -1,1 +1,2 @@
 10001admin                         admin@example.com   admin          0001
+10002another                         another@example.com assistant       0001

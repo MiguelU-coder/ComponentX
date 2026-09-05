@@ -1,19 +1,18 @@
 # Crud creation for 'ComponentX' basic operations
 # This crud will help with the orders organizations and inventory
 
+import os
+# OS is imported to check if the file exists
 ## Function for checking if an ID exists in a file
 ## @params: filename, id_searched
 ## @return: None
-
-import os
-# OS is imported to check if the file exists
 def check_id_exists(filename, id_searched):
     if not os.path.exists(filename):
         return False
     with open(filename, 'r', encoding='utf-8') as file:
         for line in file:
             fields = line.strip().split(',')
-            if fields and fields[0] == str(id_searched):
+            if fields and fields[1] == str(id_searched):
                 return True
     return False
 
@@ -30,7 +29,7 @@ def create_order(id, client_id, shop_id, date, total, status, product_id):
         print(f"\nError: Product ID {product_id} does not exist.")
         return False
     with open('Orders.txt', 'a', encoding='utf-8') as file:
-        lines = (f"{id}, {client_id}, {shop_id}, {date}, {total}, {status}, {product_id}\n") 
+        lines = (f"0,{id}, {client_id}, {shop_id}, {date}, {total}, {status}, {product_id}\n") 
         file.write(lines)
         print("A new line was written")
 
@@ -52,13 +51,13 @@ def update_order(id_searched, client_id, shop_id, date, total, status, product_i
         for line in file:
             fields = line.strip().split(',')
 # The if function will help to identify if the id_searched is equal to the id of the shop
-            if fields[0] == str(id_searched):
-                fields[1] = str(client_id)
-                fields[2] = str(shop_id)
-                fields[3] = str(date)
-                fields[4] = str(total)
-                fields[5] = str(status)
-                fields[6] = str(product_id)
+            if fields[1] == str(id_searched):
+                fields[2] = str(client_id)
+                fields[3] = str(shop_id)
+                fields[4] = str(date)
+                fields[5] = str(total)
+                fields[6] = str(status)
+                fields[7] = str(product_id)
             new_lines.append(','.join(fields))
 
     with open('Orders.txt', 'w', encoding='utf-8') as file:
@@ -73,7 +72,7 @@ def delete_order(id_searched):
     with open('Orders.txt', 'r', encoding='utf-8') as file:
         for line in file:
             fields = line.strip().split(',')
-            if fields[0] != str(id_searched):
+            if fields[1] != str(id_searched):
                 new_lines.append(line)
                 print(f"Deleting an order with the id: {id_searched}")
     with open('Orders.txt', 'w', encoding='utf-8') as file:

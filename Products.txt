@@ -1,0 +1,2 @@
+1,2, Teclado RGB, Perifericos, 50, 25.5, 1, Teclado mecanico
+1,1, Mouse, Perifericos, 10, 15.5, 1, Mouse inalambrico

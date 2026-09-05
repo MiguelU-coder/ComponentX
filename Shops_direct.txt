@@ -1,1 +1,2 @@
 10001Capital Computer              Tienda de perifericos                             0001
+10002TechHub                         Tienda de tecnologia                               0002

@@ -1,19 +1,18 @@
 # Crud creation for 'ComponentX' basic operations
 # This crud will help with the Products organizations and inventory
 
+import os
+# OS is imported to check if the file exists
 ## Function for checking if an ID exists in a file
 ## @params: filename, id_searched
 ## @return: None
-
-import os
-# OS is imported to check if the file exists
 def check_id_exists(filename, id_searched):
     if not os.path.exists(filename):
         return False
     with open(filename, 'r', encoding='utf-8') as file:
         for line in file:
             fields = line.strip().split(',')
-            if fields and fields[0] == str(id_searched):
+            if fields and fields[1] == str(id_searched):
                 return True
     return False
 
@@ -24,7 +23,7 @@ def create_product(id, name, category, stock, price, shop_id, description):
         print(f"\nError: Shop ID {shop_id} does not exist.")
         return False
     with open('Products.txt', 'a', encoding='utf-8') as file:
-        lines = (f"{id}, {name}, {category}, {stock}, {price}, {shop_id}, {description}\n") 
+        lines = (f"0,{id}, {name}, {category}, {stock}, {price}, {shop_id}, {description}\n") 
         file.write(lines)
         print("A new line was written")
 
@@ -46,13 +45,13 @@ def update_product(id_searched, name, category, stock, price, shop_id, descripti
         for line in file:
             fields = line.strip().split(',')
 # The if function will help to identify if the id_searched is equal to the id of the product
-            if fields[0] == str(id_searched):
-                fields[1] = str(name)
-                fields[2] = str(category)
-                fields[3] = str(stock)
-                fields[4] = str(price)
-                fields[5] = str(shop_id)
-                fields[6] = str(description)
+            if fields[1] == str(id_searched):
+                fields[2] = str(name)
+                fields[3] = str(category)
+                fields[4] = str(stock)
+                fields[5] = str(price)
+                fields[6] = str(shop_id)
+                fields[7] = str(description)
             new_lines.append(','.join(fields))
 
     with open('Products.txt', 'w', encoding='utf-8') as file:
@@ -67,7 +66,7 @@ def delete_product(id_searched):
     with open('Products.txt', 'r', encoding='utf-8') as file:
         for line in file:
             fields = line.strip().split(',')
-            if fields[0] != str(id_searched):
+            if fields[1] != str(id_searched):
                 new_lines.append(line)
                 print(f"Deleting a product with the id: {id_searched}")
     with open('Products.txt', 'w', encoding='utf-8') as file:

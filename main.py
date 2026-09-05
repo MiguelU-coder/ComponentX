@@ -1,3 +1,5 @@
+import os
+
 from sequential.products import create_product, read_products, update_product, delete_product
 from sequential.users import create_user, read_users, update_user, delete_user
 from sequential.clients import create_client, read_clients, update_client, delete_client
@@ -9,6 +11,27 @@ from direct.users import create_user_direct, read_users_direct, update_user_dire
 from direct.clients import create_client_direct, read_clients_direct, update_client_direct, delete_client_direct
 from direct.orders import create_order_direct, read_orders_direct, update_order_direct, delete_order_direct
 from direct.shops import create_shop_direct, read_shops_direct, update_shop_direct, delete_shop_direct
+
+from sorting.external_sorting import organize_external
+
+
+# Fields of every entity used to ask the user which field to sort by.
+FIELD_BY_ENTITY = {
+    "clients":  ["id", "name", "mail", "shop_id"],
+    "products": ["id", "name", "category", "stock", "price", "shop_id", "description"],
+    "users":    ["id", "name", "mail", "rol", "shop_id"],
+    "orders":   ["id", "client_id", "shop_id", "date", "total", "status", "product_id"],
+    "shops":    ["id", "name", "description", "admin_user_id"],
+}
+
+# Sequential file of each entity (only these are sorted).
+ENTITY_FILES = {
+    "clients":  "Clients.txt",
+    "products": "Products.txt",
+    "users":    "Users.txt",
+    "orders":   "Orders.txt",
+    "shops":    "Shops.txt",
+}
 
 
 def select_mode():
@@ -304,6 +327,73 @@ def menu_shops(mode):
                 print("Invalid Option")
 
 
+def menu_external_sort():
+    entities = {
+        "1": "clients",
+        "2": "products",
+        "3": "users",
+        "4": "orders",
+        "5": "shops",
+    }
+
+    while True:
+        print("\n===== EXTERNAL SORT =====")
+        print("1. Clients")
+        print("2. Products")
+        print("3. Users")
+        print("4. Orders")
+        print("5. Shops")
+        print("0. Back")
+
+        option = input("Select an entity: ")
+
+        if option == "0":
+            break
+
+        entity = entities.get(option)
+        # If statement for avoid invalid options from user
+        if entity is None:
+            print("Invalid Option")
+            continue
+
+        file_name = ENTITY_FILES[entity]
+        # If statement for checking if the file exists
+        if not os.path.exists(file_name):
+            print(f"\nError: {file_name} does not exist. Create records first.")
+            continue
+
+        fields = FIELD_BY_ENTITY[entity]
+
+        # New loop for selecting the field to sort by
+        while True:
+            print(f"\n===== SORT {entity.upper()} by {file_name} =====")
+            for i, field in enumerate(fields, start=1):
+                print(f"{i}. {field}")
+            print("0. Back")
+
+            field_option = input("Select a field: ")
+            
+            # If 0 is selected, return to the previous menu
+            if field_option == "0":
+                break
+
+            # Try to convert the field_option to an integer
+            try:
+                index = int(field_option)
+                # If the index is not in the range of the fields throw error
+                if index < 1 or index > len(fields):
+                    raise ValueError
+            except ValueError:
+                print("\nInvalid Option")
+                continue
+            
+            # Create the output name for the sorted file
+            output_name = os.path.splitext(file_name)[0] + '_sorted.txt'
+            # Run the external sorting algorithm
+            organize_external(file_name, output_name, index)
+            print(f"\nSorted file written: {output_name}")
+            break
+
 def main():
     mode = select_mode()
     if mode is None:
@@ -316,7 +406,8 @@ def main():
         print("3. Users")
         print("4. Orders")
         print("5. Shops")
-        print("6. Change access mode")
+        print("6. External sort")
+        print("7. Change access mode")
         print("0. Exit")
 
         option = input("Select an option: ")
@@ -333,6 +424,8 @@ def main():
             case "5":
                 menu_shops(mode)
             case "6":
+                menu_external_sort()
+            case "7":
                 mode = select_mode()
                 if mode is None:
                     return
