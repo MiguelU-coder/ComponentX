@@ -61,11 +61,6 @@ def create_user_direct(id, name, mail, rol, shop_id):
     if not os.path.exists('Users_direct.txt'):
         open('Users_direct.txt', 'w', encoding='utf-8').close()
 
-# Prevent duplicate ids
-    if check_user_exists(id):
-        print(f"\nError: User ID {id} already exists.")
-        return False
-
 # Try/except for shop validation
 # the shop the user belongs to must exist
     try:

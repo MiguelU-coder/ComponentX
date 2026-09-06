@@ -59,11 +59,6 @@ def create_shop_direct(id, name, description, admin_user_id):
     if not os.path.exists('Shops_direct.txt'):
         open('Shops_direct.txt', 'w', encoding='utf-8').close()
 
-# Prevent duplicate ids
-    if check_shop_exists(id):
-        print(f"\nError: Shop ID {id} already exists.")
-        return False
-
 # Try/except for user validation
 # the admin user of the shop must exist
     try:

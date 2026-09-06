@@ -65,11 +65,6 @@ def create_order_direct(id, client_id, shop_id, date, total, status, product_id)
     if not os.path.exists('Orders_direct.txt'):
         open('Orders_direct.txt', 'w', encoding='utf-8').close()
 
-# Prevent duplicate ids
-    if check_order_exists(id):
-        print(f"\nError: Order ID {id} already exists.")
-        return False
-
 # Try/except for client validation
 # the client of the order must exist
     try:

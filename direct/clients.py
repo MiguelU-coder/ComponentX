@@ -59,11 +59,6 @@ def create_client_direct(id, name, mail, shop_id):
     if not os.path.exists('Clients_direct.txt'):
         open('Clients_direct.txt', 'w', encoding='utf-8').close()
 
-# Prevent duplicate ids
-    if check_client_exists(id):
-        print(f"\nError: Client ID {id} already exists.")
-        return False
-
 # Try/except for shop validation
 # the shop the client belongs to must exist
     try:
