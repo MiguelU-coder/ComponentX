@@ -18,12 +18,12 @@ def check_id_exists(filename, id_searched):
     return False
 ## Function for creating a new Shop
 ## @params: id, name, description, admin_user_id
-def create_shop(id, name, address, admin_user_id):
+def create_shop(id, name, description, admin_user_id):
     if not check_id_exists('Users.txt', admin_user_id):
         print(f"\nError: User ID {admin_user_id} does not exist.")
         return False
     with open('Shops.txt', 'a', encoding='utf-8') as file:
-        lines = (f"{id}, {name}, {address}, {admin_user_id}\n") 
+        lines = (f"{id}, {name}, {description}, {admin_user_id}\n") 
         file.write(lines)
         print("A new line was written")
 
@@ -39,7 +39,7 @@ def read_shops():
 ## Function for updating the shop information
 ## @params: id_searched, name, description, admin_user_id
 ## @return: None
-def update_shop(id_searched, name, address, admin_user_id):
+def update_shop(id_searched, name, description, admin_user_id):
     new_lines = []
     with open('Shops.txt', 'r', encoding='utf-8') as file:
         for line in file:
@@ -47,7 +47,7 @@ def update_shop(id_searched, name, address, admin_user_id):
 # The if function will help to identify if the id_searched is equal to the id of the shop
             if fields[0] == str(id_searched):
                 fields[1] = str(name)
-                fields[2] = str(address)
+                fields[2] = str(description)
                 fields[3] = str(admin_user_id)
             new_lines.append(','.join(fields))
 
