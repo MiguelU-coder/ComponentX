@@ -65,11 +65,6 @@ def create_product_direct(id, name, category, stock, price, shop_id, description
     if not os.path.exists('Products_direct.txt'):
         open('Products_direct.txt', 'w', encoding='utf-8').close()
 
-# Prevent duplicate ids
-    if check_product_exists(id):
-        print(f"\nError: Product ID {id} already exists.")
-        return False
-
 # Try/except for shop validation
 # the shop the product belongs to must exist
     try:
