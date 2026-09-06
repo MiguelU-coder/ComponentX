@@ -191,7 +191,8 @@ def menu_shops():
                 id = int(input("Enter the shop's ID: "))
                 name = input("Enter the name: ")
                 address = input("Enter the address: ")
-                create_shop(id, name, address)
+                admin_user_id = int(input("Enter the admin user's ID: "))
+                create_shop(id, name, address, admin_user_id)
 
             case "2":
                 read_shops()
