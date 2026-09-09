@@ -1,2 +1,0 @@
-0,2, BobCliente, bob@mail.com, 1
-0,1, AliceCliente, alice@mail.com, 1

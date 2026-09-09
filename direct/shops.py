@@ -33,6 +33,8 @@ SHOP_REGISTER_LEN = 90
 ## @params: id_searched
 ## @return: True if the shop exists, False otherwise
 def check_shop_exists(id_searched):
+    if not os.path.exists('Shops_direct.txt'):
+        return False
     with open('Shops_direct.txt', 'r', encoding='utf-8') as file:
         file.seek((id_searched - 1) * SHOP_REGISTER_LEN)
         register = file.read(SHOP_REGISTER_LEN)
@@ -50,6 +52,20 @@ def check_shop_exists(id_searched):
 
     return True
 
+## Function for checking if there is at least one active shop register
+## @params: None
+## @return: True if at least one active shop exists, False otherwise
+def has_active_shops():
+    if not os.path.exists('Shops_direct.txt'):
+        return False
+    with open('Shops_direct.txt', 'r', encoding='utf-8') as file:
+        while True:
+            register = file.read(SHOP_REGISTER_LEN)
+            if not register or len(register) < SHOP_REGISTER_LEN:
+                return False
+            if register[0:1] == "1":
+                return True
+
 ## Function for creating a new shop using direct access
 ## @params: id, name, description, admin_user_id
 ## @return: True if the shop was created, False otherwise
@@ -59,14 +75,20 @@ def create_shop_direct(id, name, description, admin_user_id):
     if not os.path.exists('Shops_direct.txt'):
         open('Shops_direct.txt', 'w', encoding='utf-8').close()
 
-# Try/except for user validation
-# the admin user of the shop must exist
-    try:
-        with open('Users_direct.txt', 'r', encoding='utf-8'):
-            pass
-    except FileNotFoundError:
-        print("\nError: Users_direct.txt does not exist.")
+# If statement for checking if there is at least one active user,
+# the admin_user_id FK is only validated once a user exists
+# (this allows creating the first shop before any user exists)
+    from direct.users import check_user_exists, has_active_users
+    if has_active_users() and not check_user_exists(admin_user_id):
         return False
+
+# If statement for checking if the shop ID already exists
+    with open('Shops_direct.txt', 'r+', encoding='utf-8') as file:
+        file.seek((id - 1) * SHOP_REGISTER_LEN)
+        register = file.read(SHOP_REGISTER_LEN)
+        if register and len(register) >= SHOP_REGISTER_LEN and register[0:1] == "1":
+            print(f"\nError: Shop ID {id} already exists.")
+            return False
 
     register = build_shop(1, id, name, description, admin_user_id)
 
@@ -156,6 +178,7 @@ def update_shop_direct(id, name, description, admin_user_id):
         active = register[0:1]
         if active == "0":
             print(f"\nThe register {id}: WAS DELETED")
+            return False
 
         new_register = build_shop(active, id, name, description, admin_user_id)
         file.seek((id - 1) * SHOP_REGISTER_LEN)
@@ -181,6 +204,7 @@ def delete_shop_direct(id):
         active = register[0:1]
         if active == "0":
             print(f"\nThe register {id}: WAS DELETED")
+            return False
 
         file.seek((id - 1) * SHOP_REGISTER_LEN)
         file.write("0")

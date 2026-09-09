@@ -20,10 +20,8 @@ def search_minimum_non_used(archive, index):
     with open(archive, 'r', encoding='utf-8') as file:
         for line in file:
             field = line.strip().split(',')
-
             if field[0] == "1":
                 continue
-
             value = field[index]
             try:
                 value = int(value)

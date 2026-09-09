@@ -1,2 +1,3 @@
-10001Capital Computer              Tienda de perifericos                             0001
-10002TechHub                         Tienda de tecnologia                               0002
+10001CompuMundo                    Tienda principal de computadoras                  0001
+10003Tecnologia Andina             Venta de perifericos y accesorios                 0002
+10002Capital Computer              Componentes y ensamblaje de equipos               0001

@@ -35,6 +35,8 @@ USER_REGISTER_LEN = 75
 ## @params: id_searched
 ## @return: True if the user exists, False otherwise
 def check_user_exists(id_searched):
+    if not os.path.exists('Users_direct.txt'):
+        return False
     with open('Users_direct.txt', 'r', encoding='utf-8') as file:
         file.seek((id_searched - 1) * USER_REGISTER_LEN)
         register = file.read(USER_REGISTER_LEN)
@@ -52,6 +54,20 @@ def check_user_exists(id_searched):
 
     return True
 
+## Function for checking if there is at least one active user register
+## @params: None
+## @return: True if at least one active user exists, False otherwise
+def has_active_users():
+    if not os.path.exists('Users_direct.txt'):
+        return False
+    with open('Users_direct.txt', 'r', encoding='utf-8') as file:
+        while True:
+            register = file.read(USER_REGISTER_LEN)
+            if not register or len(register) < USER_REGISTER_LEN:
+                return False
+            if register[0:1] == "1":
+                return True
+
 ## Function for creating a new user using direct access
 ## @params: id, name, mail, rol, shop_id
 ## @return: True if the user was created, False otherwise
@@ -61,14 +77,20 @@ def create_user_direct(id, name, mail, rol, shop_id):
     if not os.path.exists('Users_direct.txt'):
         open('Users_direct.txt', 'w', encoding='utf-8').close()
 
-# Try/except for shop validation
-# the shop the user belongs to must exist
-    try:
-        with open('Shops_direct.txt', 'r', encoding='utf-8'):
-            pass
-    except FileNotFoundError:
-        print("\nError: Shops_direct.txt does not exist.")
+# If statement for checking if there is at least one active shop,
+# the shop_id FK is only validated once a shop exists
+# (this allows creating the first user before any shop exists)
+    from direct.shops import check_shop_exists, has_active_shops
+    if has_active_shops() and not check_shop_exists(shop_id):
         return False
+
+# If statement for checking if the user ID already exists
+    with open('Users_direct.txt', 'r+', encoding='utf-8') as file:
+        file.seek((id - 1) * USER_REGISTER_LEN)
+        register = file.read(USER_REGISTER_LEN)
+        if register and len(register) >= USER_REGISTER_LEN and register[0:1] == "1":
+            print(f"\nError: User ID {id} already exists.")
+            return False
 
     register = build_user(1, id, name, mail, rol, shop_id)
 
@@ -161,6 +183,7 @@ def update_user_direct(id, name, mail, rol, shop_id):
         active = register[0:1]
         if active == "0":
             print(f"\nThe register {id}: WAS DELETED")
+            return False
 
         new_register = build_user(active, id, name, mail, rol, shop_id)
         file.seek((id - 1) * USER_REGISTER_LEN)
@@ -186,6 +209,7 @@ def delete_user_direct(id):
         active = register[0:1]
         if active == "0":
             print(f"\nThe register {id}: WAS DELETED")
+            return False
 
         file.seek((id - 1) * USER_REGISTER_LEN)
         file.write("0")

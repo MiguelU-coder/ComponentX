@@ -19,7 +19,11 @@ def check_id_exists(filename, id_searched):
 ## Function for creating a new Product
 ## @params: id, name, category, stock, price, shop_id, description 
 def create_product(id, name, category, stock, price, shop_id, description):
-    if not check_id_exists('Shops.txt', shop_id):
+    if check_id_exists('Products.txt', id):
+        print(f"\nError: Product ID {id} already exists.")
+        return False
+    from direct.shops import check_shop_exists
+    if not check_shop_exists(shop_id):
         print(f"\nError: Shop ID {shop_id} does not exist.")
         return False
     with open('Products.txt', 'a', encoding='utf-8') as file:

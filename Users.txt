@@ -1,3 +1,0 @@
-0,3, Charlie, charlie@mail.com, chef, 2
-0,1, Alice, alice@mail.com, admin, 1
-0,2, Bob, bob@mail.com, employee, 1

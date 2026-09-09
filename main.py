@@ -1,19 +1,14 @@
 import os
 
 from sequential.products import create_product, read_products, update_product, delete_product
-from sequential.users import create_user, read_users, update_user, delete_user
-from sequential.clients import create_client, read_clients, update_client, delete_client
 from sequential.orders import create_order, read_orders, update_order, delete_order
-from sequential.shops import create_shop, read_shops, update_shop, delete_shop
 
-from direct.products import create_product_direct, read_products_direct, update_product_direct, delete_product_direct
-from direct.users import create_user_direct, read_users_direct, update_user_direct, delete_user_direct
 from direct.clients import create_client_direct, read_clients_direct, update_client_direct, delete_client_direct
-from direct.orders import create_order_direct, read_orders_direct, update_order_direct, delete_order_direct
+from direct.users import create_user_direct, read_users_direct, update_user_direct, delete_user_direct
 from direct.shops import create_shop_direct, read_shops_direct, update_shop_direct, delete_shop_direct
 
 from sorting.external_sorting import organize_external
-
+from sorting.direct_sorting import sort_clients_direct, sort_users_direct, sort_shops_direct
 
 # Fields of every entity used to ask the user which field to sort by.
 FIELD_BY_ENTITY = {
@@ -24,38 +19,27 @@ FIELD_BY_ENTITY = {
     "shops":    ["id", "name", "description", "admin_user_id"],
 }
 
-# Sequential file of each entity (only these are sorted).
+# Sequential files of the sequential-access entities (products and orders).
 ENTITY_FILES = {
-    "clients":  "Clients.txt",
     "products": "Products.txt",
-    "users":    "Users.txt",
     "orders":   "Orders.txt",
-    "shops":    "Shops.txt",
+}
+
+# Entities that use fixed-length direct access (CRUD and direct merge sort).
+# The rest (products, orders) use sequential access and the external sort.
+DIRECT_ACCESS_ENTITIES = ("clients", "users", "shops")
+
+# Direct input files of the entities that use direct access.
+DIRECT_ENTITY_FILES = {
+    "clients": "Clients_direct.txt",
+    "users":   "Users_direct.txt",
+    "shops":   "Shops_direct.txt",
 }
 
 
-def select_mode():
+def menu_clients():
     while True:
-        print("\n===== ACCESS MODE =====")
-        print("1. Sequential access")
-        print("2. Direct access")
-        print("0. Exit")
-
-        option = input("Select an option: ")
-
-        match option:
-            case "1":
-                return "sequential"
-            case "2":
-                return "direct"
-            case "0":
-                return None
-            case _:
-                print("Invalid Option")
-
-def menu_clients(mode):
-    while True:
-        print("\n===== CLIENTS =====")
+        print("\n===== CLIENTS (DIRECT ACCESS) =====")
         print("1. Create client")
         print("2. Read clients")
         print("3. Update client")
@@ -70,33 +54,21 @@ def menu_clients(mode):
                 name = input("Enter the name: ")
                 mail = input("Enter the mail: ")
                 shop_id = int(input("Enter the shop's ID: "))
-                if mode == "direct":
-                    create_client_direct(id, name, mail, shop_id)
-                else:
-                    create_client(id, name, mail, shop_id)
+                create_client_direct(id, name, mail, shop_id)
 
             case "2":
-                if mode == "direct":
-                    read_clients_direct()
-                else:
-                    read_clients()
+                read_clients_direct()
 
             case "3":
                 id_searched = int(input("Enter the client's ID to update: "))
                 name = input("Enter the name: ")
                 mail = input("Enter the mail: ")
                 shop_id = int(input("Enter the shop's ID: "))
-                if mode == "direct":
-                    update_client_direct(id_searched, name, mail, shop_id)
-                else:
-                    update_client(id_searched, name, mail, shop_id)
+                update_client_direct(id_searched, name, mail, shop_id)
 
             case "4":
                 id_searched = int(input("Enter the client's ID to delete: "))
-                if mode == "direct":
-                    delete_client_direct(id_searched)
-                else:
-                    delete_client(id_searched)
+                delete_client_direct(id_searched)
 
             case "0":
                 break
@@ -105,9 +77,9 @@ def menu_clients(mode):
                 print("Invalid Option")
 
 
-def menu_products(mode):
+def menu_products():
     while True:
-        print("\n===== PRODUCTS =====")
+        print("\n===== PRODUCTS (SEQUENTIAL ACCESS) =====")
         print("1. Create product")
         print("2. Read products")
         print("3. Update product")
@@ -125,16 +97,10 @@ def menu_products(mode):
                 price = float(input("Enter the price: "))
                 shop_id = int(input("Enter the shop's ID: "))
                 description = input("Enter the description: ")
-                if mode == "direct":
-                    create_product_direct(id, name, category, stock, price, shop_id, description)
-                else:
-                    create_product(id, name, category, stock, price, shop_id, description)
+                create_product(id, name, category, stock, price, shop_id, description)
 
             case "2":
-                if mode == "direct":
-                    read_products_direct()
-                else:
-                    read_products()
+                read_products()
 
             case "3":
                 id_searched = int(input("Enter the product's ID to update: "))
@@ -144,17 +110,11 @@ def menu_products(mode):
                 price = float(input("Enter the price: "))
                 shop_id = int(input("Enter the shop's ID: "))
                 description = input("Enter the description: ")
-                if mode == "direct":
-                    update_product_direct(id_searched, name, category, stock, price, shop_id, description)
-                else:
-                    update_product(id_searched, name, category, stock, price, shop_id, description)
+                update_product(id_searched, name, category, stock, price, shop_id, description)
 
             case "4":
                 id_searched = int(input("Enter the product's ID to delete: "))
-                if mode == "direct":
-                    delete_product_direct(id_searched)
-                else:
-                    delete_product(id_searched)
+                delete_product(id_searched)
 
             case "0":
                 break
@@ -163,9 +123,9 @@ def menu_products(mode):
                 print("Invalid Option")
 
 
-def menu_users(mode):
+def menu_users():
     while True:
-        print("\n===== USERS =====")
+        print("\n===== USERS (DIRECT ACCESS) =====")
         print("1. Create user")
         print("2. Read users")
         print("3. Update user")
@@ -181,16 +141,10 @@ def menu_users(mode):
                 mail = input("Enter the mail: ")
                 rol = input("Enter the rol: ")
                 shop_id = int(input("Enter the shop's ID: "))
-                if mode == "direct":
-                    create_user_direct(id, name, mail, rol, shop_id)
-                else:
-                    create_user(id, name, mail, rol, shop_id)
+                create_user_direct(id, name, mail, rol, shop_id)
 
             case "2":
-                if mode == "direct":
-                    read_users_direct()
-                else:
-                    read_users()
+                read_users_direct()
 
             case "3":
                 id_searched = int(input("Enter the user's ID to update: "))
@@ -198,17 +152,11 @@ def menu_users(mode):
                 mail = input("Enter the mail: ")
                 rol = input("Enter the rol: ")
                 shop_id = int(input("Enter the shop's ID: "))
-                if mode == "direct":
-                    update_user_direct(id_searched, name, mail, rol, shop_id)
-                else:
-                    update_user(id_searched, name, mail, rol, shop_id)
+                update_user_direct(id_searched, name, mail, rol, shop_id)
 
             case "4":
                 id_searched = int(input("Enter the user's ID to delete: "))
-                if mode == "direct":
-                    delete_user_direct(id_searched)
-                else:
-                    delete_user(id_searched)
+                delete_user_direct(id_searched)
 
             case "0":
                 break
@@ -217,9 +165,9 @@ def menu_users(mode):
                 print("Invalid Option")
 
 
-def menu_orders(mode):
+def menu_orders():
     while True:
-        print("\n===== ORDERS =====")
+        print("\n===== ORDERS (SEQUENTIAL ACCESS) =====")
         print("1. Create order")
         print("2. Read orders")
         print("3. Update order")
@@ -237,16 +185,10 @@ def menu_orders(mode):
                 total = float(input("Enter the total: "))
                 status = input("Enter the status: ")
                 product_id = int(input("Enter the product's ID: "))
-                if mode == "direct":
-                    create_order_direct(id, client_id, shop_id, date, total, status, product_id)
-                else:
-                    create_order(id, client_id, shop_id, date, total, status, product_id)
+                create_order(id, client_id, shop_id, date, total, status, product_id)
 
             case "2":
-                if mode == "direct":
-                    read_orders_direct()
-                else:
-                    read_orders()
+                read_orders()
 
             case "3":
                 id_searched = int(input("Enter the order's ID to update: "))
@@ -256,17 +198,11 @@ def menu_orders(mode):
                 total = float(input("Enter the total: "))
                 status = input("Enter the status: ")
                 product_id = int(input("Enter the product's ID: "))
-                if mode == "direct":
-                    update_order_direct(id_searched, client_id, shop_id, date, total, status, product_id)
-                else:
-                    update_order(id_searched, client_id, shop_id, date, total, status, product_id)
+                update_order(id_searched, client_id, shop_id, date, total, status, product_id)
 
             case "4":
                 id_searched = int(input("Enter the order's ID to delete: "))
-                if mode == "direct":
-                    delete_order_direct(id_searched)
-                else:
-                    delete_order(id_searched)
+                delete_order(id_searched)
 
             case "0":
                 break
@@ -275,9 +211,9 @@ def menu_orders(mode):
                 print("Invalid Option")
 
 
-def menu_shops(mode):
+def menu_shops():
     while True:
-        print("\n===== SHOPS =====")
+        print("\n===== SHOPS (DIRECT ACCESS) =====")
         print("1. Create shop")
         print("2. Read shops")
         print("3. Update shop")
@@ -292,33 +228,21 @@ def menu_shops(mode):
                 name = input("Enter the name: ")
                 description = input("Enter the description: ")
                 admin_user_id = int(input("Enter the admin user's ID: "))
-                if mode == "direct":
-                    create_shop_direct(id, name, description, admin_user_id)
-                else:
-                    create_shop(id, name, description, admin_user_id)
+                create_shop_direct(id, name, description, admin_user_id)
 
             case "2":
-                if mode == "direct":
-                    read_shops_direct()
-                else:
-                    read_shops()
+                read_shops_direct()
 
             case "3":
                 id_searched = int(input("Enter the shop's ID to update: "))
                 name = input("Enter the name: ")
                 description = input("Enter the description: ")
                 admin_user_id = int(input("Enter the admin user's ID: "))
-                if mode == "direct":
-                    update_shop_direct(id_searched, name, description, admin_user_id)
-                else:
-                    update_shop(id_searched, name, description, admin_user_id)
+                update_shop_direct(id_searched, name, description, admin_user_id)
 
             case "4":
                 id_searched = int(input("Enter the shop's ID to delete: "))
-                if mode == "direct":
-                    delete_shop_direct(id_searched)
-                else:
-                    delete_shop(id_searched)
+                delete_shop_direct(id_searched)
 
             case "0":
                 break
@@ -327,7 +251,33 @@ def menu_shops(mode):
                 print("Invalid Option")
 
 
-def menu_external_sort():
+## Function for sorting an entity using the correct algorithm.
+## Direct merge sort is used for shops, users and clients.
+## Sequential (external) sort is used for products and orders.
+## @params: entity, field_name, field_index, input_file
+## @return: None
+def sort_by_entity(entity, field_name, field_index, input_file):
+    direct_sorters = {
+        "clients": sort_clients_direct,
+        "users":   sort_users_direct,
+        "shops":   sort_shops_direct,
+    }
+    # If statement for checking if the entity uses direct merge sort
+    if entity in DIRECT_ACCESS_ENTITIES:
+        # Run the direct merge sort algorithm,
+        # It writes the configured *_direct_sorted.txt file
+        direct_sorters[entity](field_name)
+    else:
+        # Create the output name for the sorted file
+        output_name = os.path.splitext(input_file)[0] + '_sorted.txt'
+        # Run the sequential (external) sorting algorithm
+        organize_external(input_file, output_name, field_index)
+
+
+## Function for the sort menu, dispatching each entity to its sorting algorithm
+## @params: None
+## @return: None
+def menu_sort():
     entities = {
         "1": "clients",
         "2": "products",
@@ -337,7 +287,7 @@ def menu_external_sort():
     }
 
     while True:
-        print("\n===== EXTERNAL SORT =====")
+        print("\n===== SORT MENU =====")
         print("1. Clients")
         print("2. Products")
         print("3. Users")
@@ -356,7 +306,12 @@ def menu_external_sort():
             print("Invalid Option")
             continue
 
-        file_name = ENTITY_FILES[entity]
+        # If statement for selecting the input file of each sorting algorithm
+        if entity in DIRECT_ACCESS_ENTITIES:
+            file_name = DIRECT_ENTITY_FILES[entity]
+        else:
+            file_name = ENTITY_FILES[entity]
+
         # If statement for checking if the file exists
         if not os.path.exists(file_name):
             print(f"\nError: {file_name} does not exist. Create records first.")
@@ -372,7 +327,7 @@ def menu_external_sort():
             print("0. Back")
 
             field_option = input("Select a field: ")
-            
+
             # If 0 is selected, return to the previous menu
             if field_option == "0":
                 break
@@ -386,49 +341,45 @@ def menu_external_sort():
             except ValueError:
                 print("\nInvalid Option")
                 continue
-            
+
+            # The field name is sent to the direct merge sort,
+            # The field index is sent to the sequential (external) sort
+            field_name = fields[index - 1]
+
+            # Run the sorting algorithm for the selected entity
+            sort_by_entity(entity, field_name, index, file_name)
+
             # Create the output name for the sorted file
             output_name = os.path.splitext(file_name)[0] + '_sorted.txt'
-            # Run the external sorting algorithm
-            organize_external(file_name, output_name, index)
             print(f"\nSorted file written: {output_name}")
             break
 
 def main():
-    mode = select_mode()
-    if mode is None:
-        return
-
     while True:
-        print(f"\n===== MAIN MENU ({mode.upper()} ACCESS) =====")
+        print("\n===== MAIN MENU =====")
         print("1. Clients")
         print("2. Products")
         print("3. Users")
         print("4. Orders")
         print("5. Shops")
-        print("6. External sort")
-        print("7. Change access mode")
+        print("6. Sort")
         print("0. Exit")
 
         option = input("Select an option: ")
 
         match option:
             case "1":
-                menu_clients(mode)
+                menu_clients()
             case "2":
-                menu_products(mode)
+                menu_products()
             case "3":
-                menu_users(mode)
+                menu_users()
             case "4":
-                menu_orders(mode)
+                menu_orders()
             case "5":
-                menu_shops(mode)
+                menu_shops()
             case "6":
-                menu_external_sort()
-            case "7":
-                mode = select_mode()
-                if mode is None:
-                    return
+                menu_sort()
             case "0":
                 break
             case _:

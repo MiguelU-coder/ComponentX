@@ -19,10 +19,15 @@ def check_id_exists(filename, id_searched):
 ## Function for creating a new order
 ## @params: id, client_id, shop_id, date, total, status, product_id
 def create_order(id, client_id, shop_id, date, total, status, product_id):
-    if not check_id_exists('Clients.txt', client_id):
+    if check_id_exists('Orders.txt', id):
+        print(f"\nError: Order ID {id} already exists.")
+        return False
+    from direct.clients import check_client_exists
+    from direct.shops import check_shop_exists
+    if not check_client_exists(client_id):
         print(f"\nError: Client ID {client_id} does not exist.")
         return False
-    if not check_id_exists('Shops.txt', shop_id):
+    if not check_shop_exists(shop_id):
         print(f"\nError: Shop ID {shop_id} does not exist.")
         return False
     if not check_id_exists('Products.txt', product_id):

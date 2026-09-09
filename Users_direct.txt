@@ -1,2 +1,3 @@
-10001admin                         admin@example.com   admin          0001
-10002another                         another@example.com assistant       0001
+10001Alicia                        alicia@corp.com     admin          0001
+10003Carlos                        carlos@corp.com     empleado       0002
+10002Jose                          jose@corp.com       admin          0001

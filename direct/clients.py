@@ -33,6 +33,8 @@ CLIENT_REGISTER_LEN = 60
 ## @params: id_searched
 ## @return: True if the client exists, False otherwise
 def check_client_exists(id_searched):
+    if not os.path.exists('Clients_direct.txt'):
+        return False
     with open('Clients_direct.txt', 'r', encoding='utf-8') as file:
         file.seek((id_searched - 1) * CLIENT_REGISTER_LEN)
         register = file.read(CLIENT_REGISTER_LEN)
@@ -67,6 +69,19 @@ def create_client_direct(id, name, mail, shop_id):
     except FileNotFoundError:
         print("\nError: Shops_direct.txt does not exist.")
         return False
+
+# If statement for checking if the shop ID exists
+    from direct.shops import check_shop_exists
+    if not check_shop_exists(shop_id):
+        return False
+
+# If statement for checking if the client ID already exists
+    with open('Clients_direct.txt', 'r+', encoding='utf-8') as file:
+        file.seek((id - 1) * CLIENT_REGISTER_LEN)
+        register = file.read(CLIENT_REGISTER_LEN)
+        if register and len(register) >= CLIENT_REGISTER_LEN and register[0:1] == "1":
+            print(f"\nError: Client ID {id} already exists.")
+            return False
 
     register = build_client(1, id, name, mail, shop_id)
 
@@ -156,6 +171,7 @@ def update_client_direct(id, name, mail, shop_id):
         active = register[0:1]
         if active == "0":
             print(f"\nThe register {id}: WAS DELETED")
+            return False
 
         new_register = build_client(active, id, name, mail, shop_id)
         file.seek((id - 1) * CLIENT_REGISTER_LEN)
@@ -181,6 +197,7 @@ def delete_client_direct(id):
         active = register[0:1]
         if active == "0":
             print(f"\nThe register {id}: WAS DELETED")
+            return False
 
         file.seek((id - 1) * CLIENT_REGISTER_LEN)
         file.write("0")
