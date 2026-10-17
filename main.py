@@ -10,6 +10,8 @@ from direct.shops import create_shop_direct, read_shops_direct, update_shop_dire
 from sorting.external_sorting import organize_external
 from sorting.direct_sorting import sort_clients_direct, sort_users_direct, sort_shops_direct
 
+from arboles.categories import (TREE_FILE, get_tree, add_category, show, count_nodes, count_leaves, height, preorder, postorder, search, level_of, delete, save_tree)
+
 # Fields of every entity used to ask the user which field to sort by.
 FIELD_BY_ENTITY = {
     "clients":  ["id", "name", "mail", "shop_id"],
@@ -354,6 +356,71 @@ def menu_sort():
             print(f"\nSorted file written: {output_name}")
             break
 
+## Function for the categories menu, using the categories tree
+## @params: None
+## @return: None
+def menu_categories():
+    # The tree is loaded from the file (or created if it does not exist)
+    root = get_tree()
+
+    while True:
+        print("\n===== CATEGORIES (TREE) =====")
+        print("1. Show categories")
+        print("2. Add category")
+        print("3. Search category")
+        print("4. Delete category")
+        print("5. Traversals")
+        print("0. Back")
+
+        option = input("Select an option: ")
+
+        match option:
+            case "1":
+                show(root)
+                print("\nTotal nodes:", count_nodes(root))
+                print("Total leaves:", count_leaves(root))
+                print("Height:", height(root))
+
+            case "2":
+                parent = input("Enter the parent category: ")
+                name = input("Enter the new category: ")
+                # The tree is saved only if the category was added
+                if add_category(root, parent, name):
+                    save_tree(root, TREE_FILE)
+                    print("Category added")
+
+            case "3":
+                name = input("Enter the category to search: ")
+                node = search(root, name)
+                if node is not None:
+                    print("Found:", node.data, "- level", level_of(root, name))
+                    print("Subcategories:")
+                    show(node)
+                else:
+                    print("Category not found")
+
+            case "4":
+                name = input("Enter the category to delete: ")
+                # The root can not be deleted
+                if name == root.data:
+                    print("The root can not be deleted")
+                elif delete(root, name):
+                    save_tree(root, TREE_FILE)
+                    print("Category deleted (with its subcategories)")
+                else:
+                    print("Category not found")
+
+            case "5":
+                print("Preorder:", preorder(root))
+                print("Postorder:", postorder(root))
+
+            case "0":
+                break
+
+            case _:
+                print("Invalid Option")
+
+
 def main():
     while True:
         print("\n===== MAIN MENU =====")
@@ -363,6 +430,7 @@ def main():
         print("4. Orders")
         print("5. Shops")
         print("6. Sort")
+        print("7. Categories")
         print("0. Exit")
 
         option = input("Select an option: ")
@@ -380,6 +448,8 @@ def main():
                 menu_shops()
             case "6":
                 menu_sort()
+            case "7":
+                menu_categories()
             case "0":
                 break
             case _:
