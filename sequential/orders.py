@@ -33,6 +33,11 @@ def create_order(id, client_id, shop_id, date, total, status, product_id):
     if not check_id_exists('Products.txt', product_id):
         print(f"\nError: Product ID {product_id} does not exist.")
         return False
+# If statement for checking if the status exists in the status tree
+    from arboles.orders_tree import is_valid_status
+    if not is_valid_status(status):
+        print(f"\nError: Status '{status}' does not exist in the status tree.")
+        return False
     with open('Orders.txt', 'a', encoding='utf-8') as file:
         lines = (f"0,{id}, {client_id}, {shop_id}, {date}, {total}, {status}, {product_id}\n") 
         file.write(lines)
@@ -51,6 +56,12 @@ def read_orders():
 ## @params: id_searched, client_id, shop_id, date, total, status, product_id
 ## @return: None
 def update_order(id_searched, client_id, shop_id, date, total, status, product_id):
+# If statement for checking if the status exists in the status tree
+    from arboles.orders_tree import is_valid_status
+    if not is_valid_status(status):
+        print(f"\nError: Status '{status}' does not exist in the status tree.")
+        return False
+
     new_lines = []
     with open('Orders.txt', 'r', encoding='utf-8') as file:
         for line in file:
@@ -79,6 +90,7 @@ def delete_order(id_searched):
             fields = line.strip().split(',')
             if fields[1] != str(id_searched):
                 new_lines.append(line)
+            else:
                 print(f"Deleting an order with the id: {id_searched}")
     with open('Orders.txt', 'w', encoding='utf-8') as file:
         for line in new_lines:

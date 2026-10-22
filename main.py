@@ -11,6 +11,11 @@ from sorting.external_sorting import organize_external
 from sorting.direct_sorting import sort_clients_direct, sort_users_direct, sort_shops_direct
 
 from arboles.categories import (TREE_FILE, get_tree, add_category, show, count_nodes, count_leaves, height, preorder, postorder, search, level_of, delete, save_tree)
+from arboles.roles import (ROLES_FILE, get_roles_tree, list_roles, add_area, add_role, delete_role, build_roles_with_users)
+# The binary tree functions are used with the module name (binary_tree.show, binary_tree.search...)
+# because the categories tree already uses the names show, search, height...
+from arboles import binary_tree
+from arboles.orders_tree import build_status_tree, load_order_trees, show_order, show_orders, finish_order
 
 # Fields of every entity used to ask the user which field to sort by.
 FIELD_BY_ENTITY = {
@@ -141,6 +146,7 @@ def menu_users():
                 id = int(input("Enter the user's ID: "))
                 name = input("Enter the name: ")
                 mail = input("Enter the mail: ")
+                print("Valid roles:", ", ".join(list_roles(get_roles_tree())))
                 rol = input("Enter the rol: ")
                 shop_id = int(input("Enter the shop's ID: "))
                 create_user_direct(id, name, mail, rol, shop_id)
@@ -152,6 +158,7 @@ def menu_users():
                 id_searched = int(input("Enter the user's ID to update: "))
                 name = input("Enter the name: ")
                 mail = input("Enter the mail: ")
+                print("Valid roles:", ", ".join(list_roles(get_roles_tree())))
                 rol = input("Enter the rol: ")
                 shop_id = int(input("Enter the shop's ID: "))
                 update_user_direct(id_searched, name, mail, rol, shop_id)
@@ -174,6 +181,12 @@ def menu_orders():
         print("2. Read orders")
         print("3. Update order")
         print("4. Delete order")
+        print("5. Show status tree")
+        print("6. Orders in progress (by ID)")
+        print("7. Finished orders (by ID)")
+        print("8. Next order to prepare")
+        print("9. Finish order")
+        print("10. Search order")
         print("0. Back")
 
         option = input("Select an option: ")
@@ -185,6 +198,7 @@ def menu_orders():
                 shop_id = int(input("Enter the shop's ID: "))
                 date = input("Enter the date: ")
                 total = float(input("Enter the total: "))
+                print("Valid status: pendiente, activo, entregado, cancelado")
                 status = input("Enter the status: ")
                 product_id = int(input("Enter the product's ID: "))
                 create_order(id, client_id, shop_id, date, total, status, product_id)
@@ -198,6 +212,7 @@ def menu_orders():
                 shop_id = int(input("Enter the shop's ID: "))
                 date = input("Enter the date: ")
                 total = float(input("Enter the total: "))
+                print("Valid status: pendiente, activo, entregado, cancelado")
                 status = input("Enter the status: ")
                 product_id = int(input("Enter the product's ID: "))
                 update_order(id_searched, client_id, shop_id, date, total, status, product_id)
@@ -205,6 +220,61 @@ def menu_orders():
             case "4":
                 id_searched = int(input("Enter the order's ID to delete: "))
                 delete_order(id_searched)
+
+            case "5":
+                status_root = build_status_tree()
+                binary_tree.show(status_root)
+                print("\nTotal nodes:", binary_tree.count_nodes(status_root))
+                print("Total leaves (statuses):", binary_tree.count_leaves(status_root))
+                print("Height:", binary_tree.height(status_root))
+
+            case "6":
+                # The trees are built again from the file every time
+                in_progress, finished = load_order_trees()
+                show_orders(in_progress)
+                print("\nInorder:", binary_tree.inorder(in_progress))
+                print("Preorder:", binary_tree.preorder(in_progress))
+                print("Postorder:", binary_tree.postorder(in_progress))
+                print("Height:", binary_tree.height(in_progress))
+
+            case "7":
+                in_progress, finished = load_order_trees()
+                show_orders(finished)
+                print("\nInorder:", binary_tree.inorder(finished))
+                print("Height:", binary_tree.height(finished))
+
+            case "8":
+                # The smallest ID in progress is the oldest order
+                in_progress, finished = load_order_trees()
+                node = binary_tree.minimum(in_progress)
+                if node is None:
+                    print("There are no orders in progress")
+                else:
+                    print("Next order to prepare:")
+                    show_order(node.value)
+
+            case "9":
+                in_progress, finished = load_order_trees()
+                order_id = int(input("Enter the order's ID to finish: "))
+                new_status = input("Enter the new status (entregado / cancelado): ")
+                in_progress, finished = finish_order(in_progress, finished, order_id, new_status)
+                print("\nIn progress:", binary_tree.inorder(in_progress))
+                print("Finished:", binary_tree.inorder(finished))
+
+            case "10":
+                in_progress, finished = load_order_trees()
+                order_id = int(input("Enter the order's ID to search: "))
+                node = binary_tree.search(in_progress, order_id)
+                if node is not None:
+                    print("The order is in progress")
+                else:
+                    node = binary_tree.search(finished, order_id)
+                    if node is not None:
+                        print("The order is finished")
+                if node is None:
+                    print("Order not found")
+                else:
+                    show_order(node.value)
 
             case "0":
                 break
@@ -421,6 +491,77 @@ def menu_categories():
                 print("Invalid Option")
 
 
+## Function for the roles menu, using the roles tree (areas -> roles -> users)
+## @params: None
+## @return: None
+def menu_roles():
+    # The tree is loaded from the file (or created if it does not exist)
+    root = get_roles_tree()
+
+    while True:
+        print("\n===== ROLES (TREE) =====")
+        print("1. Show roles")
+        print("2. Show roles with users")
+        print("3. Add area")
+        print("4. Add role")
+        print("5. Search role")
+        print("6. Delete role/area")
+        print("7. Traversals")
+        print("0. Back")
+
+        option = input("Select an option: ")
+
+        match option:
+            case "1":
+                show(root)
+                print("\nTotal nodes:", count_nodes(root))
+                print("Total leaves:", count_leaves(root))
+                print("Height:", height(root))
+
+            case "2":
+                show(build_roles_with_users(root))
+
+            case "3":
+                name = input("Enter the new area: ")
+                # The tree is saved only if the area was added
+                if add_area(root, name):
+                    save_tree(root, ROLES_FILE)
+                    print("Area added")
+
+            case "4":
+                area = input("Enter the area: ")
+                name = input("Enter the new role: ")
+                # The tree is saved only if the role was added
+                if add_role(root, area, name):
+                    save_tree(root, ROLES_FILE)
+                    print("Role added")
+
+            case "5":
+                name = input("Enter the role or area to search: ")
+                node = search(root, name)
+                if node is not None:
+                    print("Found:", node.data, "- level", level_of(root, name))
+                    show(node)
+                else:
+                    print("Role not found")
+
+            case "6":
+                name = input("Enter the role or area to delete: ")
+                if delete_role(root, name):
+                    save_tree(root, ROLES_FILE)
+                    print("Deleted")
+
+            case "7":
+                print("Preorder:", preorder(root))
+                print("Postorder:", postorder(root))
+
+            case "0":
+                break
+
+            case _:
+                print("Invalid Option")
+
+
 def main():
     while True:
         print("\n===== MAIN MENU =====")
@@ -431,6 +572,7 @@ def main():
         print("5. Shops")
         print("6. Sort")
         print("7. Categories")
+        print("8. Roles")
         print("0. Exit")
 
         option = input("Select an option: ")
@@ -450,6 +592,8 @@ def main():
                 menu_sort()
             case "7":
                 menu_categories()
+            case "8":
+                menu_roles()
             case "0":
                 break
             case _:
