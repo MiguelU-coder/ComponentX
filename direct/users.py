@@ -84,6 +84,12 @@ def create_user_direct(id, name, mail, rol, shop_id):
     if has_active_shops() and not check_shop_exists(shop_id):
         return False
 
+# If statement for checking if the rol exists in the roles tree
+    from arboles.roles import is_valid_role
+    if not is_valid_role(rol):
+        print(f"\nError: Rol '{rol}' does not exist in the roles tree.")
+        return False
+
 # If statement for checking if the user ID already exists
     with open('Users_direct.txt', 'r+', encoding='utf-8') as file:
         file.seek((id - 1) * USER_REGISTER_LEN)
@@ -163,6 +169,28 @@ def read_users_direct():
             shop_id = register[70:74].strip()
             print(user_id, "-", name, "-", mail, "-", rol, "-", shop_id)
 
+## Function for getting all the active users from the file
+## @params: None
+## @return: list of (id, name, rol) of the active users
+def get_active_users():
+    users = []
+    if not os.path.exists('Users_direct.txt'):
+        return users
+
+    with open('Users_direct.txt', 'r', encoding='utf-8') as file:
+        while True:
+            register = file.read(USER_REGISTER_LEN)
+            if not register or len(register) < USER_REGISTER_LEN:
+                break
+            if register[0:1] == "0":
+                continue
+
+            user_id = register[1:5].strip()
+            name = register[5:35].strip()
+            rol = register[55:70].strip()
+            users.append((user_id, name, rol))
+    return users
+
 ## Function for updating a user using direct access
 ## @params: id, name, mail, rol, shop_id
 ## @return: True if the user was updated, False otherwise
@@ -170,6 +198,12 @@ def update_user_direct(id, name, mail, rol, shop_id):
 # If the file was never created there is nothing to update.
     if not os.path.exists('Users_direct.txt'):
         print(f"\nError: Users_direct.txt does not exist.")
+        return False
+
+# If statement for checking if the rol exists in the roles tree
+    from arboles.roles import is_valid_role
+    if not is_valid_role(rol):
+        print(f"\nError: Rol '{rol}' does not exist in the roles tree.")
         return False
 
     with open('Users_direct.txt', 'r+', encoding='utf-8') as file:
