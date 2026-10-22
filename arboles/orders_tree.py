@@ -20,10 +20,13 @@ STATUS_INDEX = 6
 ## @params: None
 ## @return: root of the status tree
 def build_status_tree():
+    # Level 0: the root
     root = BinaryNode("Pedidos")
+    # Level 1: the two groups
     root.left = BinaryNode("En curso")
     root.right = BinaryNode("Finalizados")
 
+    # Level 2: the statuses (they are the leaves)
     root.left.left = BinaryNode("pendiente")
     root.left.right = BinaryNode("activo")
     root.right.left = BinaryNode("entregado")
@@ -32,6 +35,7 @@ def build_status_tree():
 
 
 ## Function for checking if a status exists (only the leaves are statuses)
+## "En curso" or "Finalizados" are not valid statuses because they have children
 ## @params: status
 ## @return: True if the status is valid, False otherwise
 def is_valid_status(status):
@@ -42,6 +46,7 @@ def is_valid_status(status):
 
 
 ## Function for checking if a status is on the "En curso" side of the tree
+## It only searches in the left side of the root
 ## @params: status
 ## @return: True if the order is still in progress, False otherwise
 def is_in_progress(status):
@@ -54,6 +59,7 @@ def is_in_progress(status):
 ## @params: None
 ## @return: in_progress_root, finished_root
 def load_order_trees():
+    # Both trees start empty
     in_progress = None
     finished = None
 
@@ -64,13 +70,13 @@ def load_order_trees():
         for line in file:
             if line.strip() == "":
                 continue
-
-            # strip() removes the spaces that are saved after each comma
             fields = []
             for field in line.split(","):
                 fields.append(field.strip())
 
+            # The ID is the key of the node and the fields are the value
             order_id = int(fields[1])
+            # The status tree decides in which BST the order goes
             if is_in_progress(fields[STATUS_INDEX]):
                 in_progress = insert(in_progress, order_id, fields)
             else:
@@ -88,6 +94,7 @@ def show_order(fields):
 
 
 ## Function for showing the orders of a tree in order of ID (inorder traversal)
+## Left side first (smaller IDs), then the node, then the right side (bigger IDs)
 ## @params: node
 ## @return: None
 def show_orders(node):
@@ -104,11 +111,13 @@ def show_orders(node):
 def finish_order(in_progress, finished, order_id, new_status):
     from sequential.orders import update_order
 
+    # The order must be in the in progress tree
     node = search(in_progress, order_id)
     if node is None:
         print(f"The order {order_id} is not in progress")
         return in_progress, finished
 
+    # The new status must be a leaf of the "Finalizados" side
     if is_in_progress(new_status) or not is_valid_status(new_status):
         print("The new status must be 'entregado' or 'cancelado'")
         return in_progress, finished
@@ -119,6 +128,7 @@ def finish_order(in_progress, finished, order_id, new_status):
     # The change is saved in the file too
     update_order(order_id, fields[2], fields[3], fields[4], fields[5], new_status, fields[7])
 
+    # Move the order: delete it from one BST and insert it in the other
     in_progress = delete(in_progress, order_id)
     finished = insert(finished, order_id, fields)
     return in_progress, finished
